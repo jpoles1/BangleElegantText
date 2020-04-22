@@ -15,6 +15,10 @@ const yposDml = 170;
 const yposDayMonth = 195;
 const yposGMT = 220;
 
+const HR_CLICK_COUNT = 3; // number of taps
+const HR_CLICK_PERIOD = 1; // second
+let hrPow = 0;
+
 const onesPlace = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twenty one", "twenty two", "twenty three"];
 const tensPlace = ["o'", "teen", "twenty", "thirty", "forty", "fifty"];
 const abbrevMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -78,7 +82,6 @@ function drawTime() {
   const newTimeString = `${hoursWord}${minTensWord}${minOnesWord}`;
   
   if(newTimeString != lastTimeString) {
-    console.log("clr");
     g.clearRect(0, yposTime, g.getWidth(), yposTime + (timeFontSize+ymarginTime)*3);
     if(meridian == "PM"){
       g.setColor(nightColor[0], nightColor[1], nightColor[2]);
@@ -119,6 +122,29 @@ function drawDate() {
   lastDateString = newDateString;
 }
 
+function drawHR(hrm) {
+  console.log(hrm);
+  const x0 = 15;
+  const y0 = yposDate + 5;
+  const width = 55;
+  const height = 55;
+  g.clearRect(0, yposDate, 80, g.getHeight());
+  if(hrPow){
+    g.setColor(176/255, 44/255, 44/255);
+    g.fillRect(x0, y0, x0+width, y0+height);
+  }
+  g.setColor(1, 1, 1);
+  g.setFont(font, 18);
+  g.drawString("HR:", x0 + width/2, y0+15, true);
+  g.setFont(font, 22);
+  if(hrm && hrm.confidence > 10) {
+    g.drawString(`${hrm.bpm}`, x0 + width/2, y0+38, true);
+  }
+  else {
+    g.drawString(hrPow ? "??" : "off" , x0 + width/2, y0+38, true); 
+  }
+}
+
 function drawDividers() {
   const brighten = 0.08;
   g.setColor(bgColor[0] + brighten, bgColor[1] + brighten, bgColor[2] + brighten);
@@ -142,20 +168,34 @@ setInterval(redraw, 1000);
 
 // draw now
 redraw();
+drawHR();
 
 // Show launcher when middle button pressed
 setWatch(Bangle.showLauncher, BTN2, {repeat:false,edge:"falling"});
 
-Bangle.buzz(1000);
+var clickTimes = [];
+setWatch(function(e) {
+  while (clickTimes.length >= HR_CLICK_COUNT) {
+    clickTimes.shift();
+  }
+  clickTimes.push(e.time);
+  var clickPeriod = e.time-clickTimes[0];
+  if (clickTimes.length == HR_CLICK_COUNT && clickPeriod< HR_CLICK_PERIOD) {
+    toggleHR();
+    clickTimes = [];
+  }
+}, BTN1, {repeat:true, edge:"rising"});
 
-Bangle.beep(200,207.65*8).then(
-()=>Bangle.beep(200,220.00*8)).then(
-()=>Bangle.beep(200,246.94*8)).then(
-()=>Bangle.beep(200,261.63*8)).then(
-()=>Bangle.beep(200,293.66*8)).then(
-()=>Bangle.beep(200,329.63*8)).then(
-()=>Bangle.beep(200,369.99*8)).then(
-()=>Bangle.beep(200,392.00*8)).then(
-()=>Bangle.beep(200,440.00*8));
-
-console.log(E.getBattery());
+function toggleHR(){
+  hrPow = !hrPow;
+  Bangle.setHRMPower(hrPow);
+  Bangle.setLCDTimeout(!hrPow);
+  if(hrPow){
+    drawHR();
+    Bangle.on('HRM',function(hrm) {
+      drawHR(hrm);
+    });
+  } else {
+    drawHR();
+  }
+}
