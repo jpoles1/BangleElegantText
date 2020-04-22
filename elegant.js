@@ -1,22 +1,23 @@
 var locale = require("locale");
 const timeFontSize = 35;
-const dateFontSize = 30;
+const dateFontSize = 18;
 const smallFontSize = 20;
 const font = "Vector";
+const bgColor = [0.1, 0.1, 0.1];
 const dayColor = [252/255, 216/255, 94/255];
 const nightColor = [81/255, 149/255, 237/255];
 
 const xyCenter = g.getWidth() / 2;
-const yposTime = 50;
+const yposTime = 46;
 const ymarginTime = 5;
 const yposDate = yposTime + (timeFontSize + ymarginTime) * 3;
 const yposDml = 170;
 const yposDayMonth = 195;
 const yposGMT = 220;
 
-onesPlace = ["clock", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twenty one", "twenty two", "twenty three"];
-tensPlace = ["o'", "teen", "twenty", "thirty", "forty", "fifty"];
-
+const onesPlace = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twenty one", "twenty two", "twenty three"];
+const tensPlace = ["o'", "teen", "twenty", "thirty", "forty", "fifty"];
+const abbrevMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 // Check settings for what type our clock should be
 var is12Hour = true; //(require("Storage").readJSON("setting.json",1)||{})["12hour"];
 
@@ -25,18 +26,20 @@ function getUTCTime(d) {
 }
 
 function redraw() {
-  g.clearRect(0, 215, 240, 240);
+  g.setBgColor(bgColor[0], bgColor[1], bgColor[2]);
   drawTime();
+  drawDate();
+  drawDividers();
 }
 
 let lastTimeString = "";
+
 function drawTime() {
   // get date
   var d = new Date();
   var da = d.toString().split(" ");
   var dutc = getUTCTime(d);
 
-  g.reset(); // default draw styles
   // drawSting centered
   g.setFontAlign(0, 0);
 
@@ -88,9 +91,38 @@ function drawTime() {
     g.drawString(`${minOnesWord}`, xyCenter, yposTime+(timeFontSize+ymarginTime)*2, true);
   }
   lastTimeString = newTimeString; 
-  // Date String
-  g.setFont(font, dateFontSize);
-  g.drawString(`${d.getMonth()+1}/${d.getDate()}`, xyCenter, yposDate, true);
+}
+
+let lastDateString = "";
+
+function drawDate() {
+  // get date
+  var d = new Date();
+  const newDateString = `${d.getMonth()}${d.getDate()}`;
+  if(newDateString != lastDateString){
+    // draw date
+    const width = 66;
+    const height = 66;
+    const borderWidth = 4;
+    const borderTopWidth = 26;
+    g.clearRect(xyCenter - width/2, yposDate, xyCenter + width/2, yposDate + height);
+    g.setColor(0.6, 0.6, 0.7);
+    g.fillRect(xyCenter - width/2, yposDate, xyCenter + width/2, yposDate + height);
+    g.setColor(bgColor[0], bgColor[1], bgColor[2]);
+    g.fillRect(xyCenter - width/2 + borderWidth, yposDate + borderTopWidth, xyCenter + width/2 - borderWidth, yposDate + height - borderWidth);
+    g.setColor(1, 1, 1);
+    g.setFont(font, dateFontSize-2);
+    g.drawString(`${abbrevMonths[d.getMonth() + 1]}`, xyCenter, yposDate+11, true);
+    g.setFont(font, dateFontSize);
+    g.drawString(`${d.getDate()}`, xyCenter, yposDate + height - 22, true);
+  }
+  lastDateString = newDateString;
+}
+
+function drawDividers() {
+  const brighten = 0.08;
+  g.setColor(bgColor[0] + brighten, bgColor[1] + brighten, bgColor[2] + brighten);
+  g.fillRect(0, yposDate - 12, g.getWidth(), yposDate - 12 + 1); 
 }
 
 // handle switch display on by pressing BTN1
@@ -101,6 +133,8 @@ Bangle.on('lcdPower', function(on) {
 // clean app screen
 g.clear();
 Bangle.loadWidgets();
+g.setColor(bgColor[0], bgColor[1], bgColor[2]);
+g.fillRect(0, 25, g.getWidth(), g.getHeight());
 Bangle.drawWidgets();
 
 // refesh every 100 milliseconds
