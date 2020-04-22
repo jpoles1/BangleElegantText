@@ -44,10 +44,6 @@ function drawTime() {
   var da = d.toString().split(" ");
   var dutc = getUTCTime(d);
 
-  // drawSting centered
-  g.setFontAlign(0, 0);
-
-  // draw time
   var time = da[4].split(":");
   var hours = time[0],
     minutes = time[1],
@@ -66,10 +62,6 @@ function drawTime() {
     }
     hours = (" "+hours).substr(-2);
   }
-
-  // Time
-  g.setFont(font, timeFontSize);
-  //g.drawString(`${hours}:${minutes}:${seconds}`, xyCenter, yposTime, true);
   const hoursWord = onesPlace[parseInt(hours)];
   let minTensWord = "";
   let minOnesWord = "";
@@ -82,7 +74,9 @@ function drawTime() {
   const newTimeString = `${hoursWord}${minTensWord}${minOnesWord}`;
   
   if(newTimeString != lastTimeString) {
-    g.clearRect(0, yposTime, g.getWidth(), yposTime + (timeFontSize+ymarginTime)*3);
+    g.clearRect(0, 30, g.getWidth(), yposTime + (timeFontSize+ymarginTime)*3);
+    g.setFontAlign(0, 0);
+    g.setFont(font, timeFontSize);
     if(meridian == "PM"){
       g.setColor(nightColor[0], nightColor[1], nightColor[2]);
     } else {
