@@ -69,7 +69,11 @@ function drawTime() {
     minTensWord = onesPlace[parseInt(minutes)];
   } else {
     minTensWord = tensPlace[parseInt(minutes[0])];
-    minOnesWord = onesPlace[parseInt(minutes[1])];
+    if(minutes[0] == "0" && minutes[1] == "0"){
+      minOnesWord = "clock";
+    } else {
+      minOnesWord = onesPlace[parseInt(minutes[1])];
+    }
   }
   const newTimeString = `${hoursWord}${minTensWord}${minOnesWord}`;
   
@@ -117,7 +121,7 @@ function drawDate() {
 }
 
 function drawHR(hrm) {
-  console.log(hrm);
+  //console.log(hrm);
   const x0 = 15;
   const y0 = yposDate + 5;
   const width = 55;
