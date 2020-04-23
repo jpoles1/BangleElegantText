@@ -109,7 +109,7 @@ function drawDate() {
     g.fillRect(xyCenter - width/2 + borderWidth, yposDate + borderTopWidth, xyCenter + width/2 - borderWidth, yposDate + height - borderWidth);
     g.setColor(1, 1, 1);
     g.setFont(font, dateFontSize-2);
-    g.drawString(`${abbrevMonths[d.getMonth() + 1]}`, xyCenter, yposDate+11, true);
+    g.drawString(`${abbrevMonths[d.getMonth()]}`, xyCenter, yposDate+11, true);
     g.setFont(font, dateFontSize);
     g.drawString(`${d.getDate()}`, xyCenter, yposDate + height - 22, true);
   }
