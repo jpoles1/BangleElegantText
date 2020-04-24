@@ -1,5 +1,5 @@
 var locale = require("locale");
-const timeFontSize = 35;
+const timeFontSize = 34;
 const dateFontSize = 18;
 const smallFontSize = 20;
 const font = "Vector";
@@ -22,6 +22,7 @@ let hrPow = 0;
 const onesPlace = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twenty one", "twenty two", "twenty three"];
 const tensPlace = ["o'", "teen", "twenty", "thirty", "forty", "fifty"];
 const abbrevMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const abbrevDoW = ["Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat"];
 // Check settings for what type our clock should be
 var is12Hour = true; //(require("Storage").readJSON("setting.json",1)||{})["12hour"];
 
@@ -103,7 +104,7 @@ function drawDate() {
   if(newDateString != lastDateString){
     // draw date
     const width = 66;
-    const height = 66;
+    const height = 72;
     const borderWidth = 4;
     const borderTopWidth = 26;
     g.clearRect(xyCenter - width/2, yposDate, xyCenter + width/2, yposDate + height);
@@ -114,8 +115,10 @@ function drawDate() {
     g.setColor(1, 1, 1);
     g.setFont(font, dateFontSize-2);
     g.drawString(`${abbrevMonths[d.getMonth()]}`, xyCenter, yposDate+11, true);
+    g.setFont(font, dateFontSize-4);
+    g.drawString(`${abbrevDoW[d.getDay()]}`, xyCenter, yposDate + 34, true);
     g.setFont(font, dateFontSize);
-    g.drawString(`${d.getDate()}`, xyCenter, yposDate + height - 22, true);
+    g.drawString(`${d.getDate()}`, xyCenter, yposDate + height - 18, true);
   }
   lastDateString = newDateString;
 }
