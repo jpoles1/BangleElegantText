@@ -1,6 +1,9 @@
-var locale = require("locale");
-const timeFontSize = 34;
-const dateFontSize = 18;
+const locale = require("locale");
+
+const showWidgets = false;
+
+const timeFontSize = showWidgets ? 34 : 38;
+const dateFontSize = showWidgets ? 18 : 20;
 const smallFontSize = 20;
 const font = "Vector";
 const bgColor = [0.1, 0.1, 0.1];
@@ -8,9 +11,10 @@ const dayColor = [252/255, 216/255, 94/255];
 const nightColor = [81/255, 149/255, 237/255];
 
 const xyCenter = g.getWidth() / 2;
-const yposTime = 46;
+const yposTime = showWidgets ? 46 : 24;
 const ymarginTime = 5;
-const yposDate = yposTime + (timeFontSize + ymarginTime) * 3;
+const ymarginDate = showWidgets ? 0 : 2;
+const yposDate = yposTime + (timeFontSize + ymarginTime) * 3 + ymarginDate;
 const yposDml = 170;
 const yposDayMonth = 195;
 const yposGMT = 220;
@@ -24,33 +28,75 @@ const tensPlace = ["o'", "teen", "twenty", "thirty", "forty", "fifty"];
 const abbrevMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const abbrevDoW = ["Sun", "Mon", "Tues", "Wed", "Thur", "Fri", "Sat"];
 // Check settings for what type our clock should be
-var is12Hour = true; //(require("Storage").readJSON("setting.json",1)||{})["12hour"];
+let is12Hour = true; //(require("Storage").readJSON("setting.json",1)||{})["12hour"];
 
 function getUTCTime(d) {
   return d.toUTCString().split(' ')[4].split(':').map(function(d){return Number(d)});
 }
 
-function redraw() {
-  g.setBgColor(bgColor[0], bgColor[1], bgColor[2]);
+function fillRoundedRect(x1, y1, x2, y2, r) {
+  g.fillRect(x1+r, y1+r, x2-r, y2-r);
+  //Top
+  g.fillRect(x1+r, y1, x2-r, y1+r);
+  //Bottom
+  g.fillRect(x1+r, y2-r, x2-r, y2);
+  //Left
+  g.fillRect(x1, y1+r, x1+r, y2-r);
+  //Right
+  g.fillRect(x2-r, y1+r, x2, y2-r);
+
+  //Top Left
+  g.fillCircle(x1 + r, y1 + r, r);
+  //Top Right
+  g.fillCircle(x2 - r, y1 + r, r);
+  //Bottom Left
+  g.fillCircle(x2 - r, y2 - r, r);
+  //Bottom Right
+  g.fillCircle(x1 + r, y2 - r, r);
+}
+
+function fastRedraw() {
   drawTime();
+}
+function slowRedraw() {
   drawDate();
-  drawDividers();
+  if(showWidgets) {
+    //not enough room for bat bar?
+    drawDivider();
+  } else {
+    drawBatBar();
+  }
+
 }
 
 let lastTimeString = "";
 
+function meridian() {
+  const d = new Date();
+  const hour = d.getHours()
+  return hour >= 12 ? "PM" : "AM";
+}
+
+function setColorByMeridian() {
+  if(meridian() == "PM"){
+    g.setColor(nightColor[0], nightColor[1], nightColor[2]);
+  } else {
+    g.setColor(dayColor[0], dayColor[1], dayColor[2]);
+  }
+}
+
 function drawTime() {
   // get date
-  var d = new Date();
-  var da = d.toString().split(" ");
-  var dutc = getUTCTime(d);
+  const d = new Date();
+  const da = d.toString().split(" ");
+  const dutc = getUTCTime(d);
 
-  var time = da[4].split(":");
-  var hours = time[0],
+  const time = da[4].split(":");
+  let hours = time[0],
     minutes = time[1],
     seconds = time[2];
 
-  var meridian = "";
+  let meridian = "";
   if (is12Hour) {
     hours = parseInt(hours,10);
     meridian = "AM";
@@ -79,14 +125,10 @@ function drawTime() {
   const newTimeString = `${hoursWord}${minTensWord}${minOnesWord}`;
   
   if(newTimeString != lastTimeString) {
-    g.clearRect(0, 30, g.getWidth(), yposTime + (timeFontSize+ymarginTime)*3);
+    g.clearRect(0, showWidgets ? 30 : 0, g.getWidth(), yposTime + (timeFontSize+ymarginTime)*3);
     g.setFontAlign(0, 0);
     g.setFont(font, timeFontSize);
-    if(meridian == "PM"){
-      g.setColor(nightColor[0], nightColor[1], nightColor[2]);
-    } else {
-      g.setColor(dayColor[0], dayColor[1], dayColor[2]);
-    }
+    setColorByMeridian();
     g.drawString(`${hoursWord}`, xyCenter, yposTime, true);
     g.setColor(1,1,1);
     g.drawString(`${minTensWord}`, xyCenter, yposTime+(timeFontSize+ymarginTime), true);
@@ -99,24 +141,24 @@ let lastDateString = "";
 
 function drawDate() {
   // get date
-  var d = new Date();
+  let d = new Date();
   const newDateString = `${d.getMonth()}${d.getDate()}`;
   if(newDateString != lastDateString){
     // draw date
-    const width = 66;
-    const height = 72;
+    const width = showWidgets ? 66 : 72;
+    const height = showWidgets ? 72 : 80;
     const borderWidth = 4;
     const borderTopWidth = 26;
-    g.clearRect(xyCenter - width/2, yposDate, xyCenter + width/2, yposDate + height);
+    g.clearRect(xyCenter - width/2 - 2, yposDate, xyCenter + width/2 + 2, yposDate + height);
     g.setColor(0.6, 0.6, 0.7);
-    g.fillRect(xyCenter - width/2, yposDate, xyCenter + width/2, yposDate + height);
+    fillRoundedRect(xyCenter - width/2, yposDate, xyCenter + width/2, yposDate + height, 2);
     g.setColor(bgColor[0], bgColor[1], bgColor[2]);
-    g.fillRect(xyCenter - width/2 + borderWidth, yposDate + borderTopWidth, xyCenter + width/2 - borderWidth, yposDate + height - borderWidth);
+    fillRoundedRect(xyCenter - width/2 + borderWidth, yposDate + borderTopWidth, xyCenter + width/2 - borderWidth, yposDate + height - borderWidth, 4);
     g.setColor(1, 1, 1);
     g.setFont(font, dateFontSize-2);
     g.drawString(`${abbrevMonths[d.getMonth()]}`, xyCenter, yposDate+11, true);
     g.setFont(font, dateFontSize-4);
-    g.drawString(`${abbrevDoW[d.getDay()]}`, xyCenter, yposDate + 34, true);
+    g.drawString(`${abbrevDoW[d.getDay()]}`, xyCenter, yposDate + (showWidgets ? 34 : 38), true);
     g.setFont(font, dateFontSize);
     g.drawString(`${d.getDate()}`, xyCenter, yposDate + height - 18, true);
   }
@@ -126,7 +168,7 @@ function drawDate() {
 function drawHR(hrm) {
   //console.log(hrm);
   const x0 = 15;
-  const y0 = yposDate + 5;
+  const y0 = yposDate + (showWidgets ? 5 : 10);
   const width = 55;
   const height = 55;
   g.clearRect(0, yposDate, 80, g.getHeight());
@@ -146,10 +188,30 @@ function drawHR(hrm) {
   }
 }
 
-function drawDividers() {
+function drawDivider() {
   const brighten = 0.08;
   g.setColor(bgColor[0] + brighten, bgColor[1] + brighten, bgColor[2] + brighten);
   g.fillRect(0, yposDate - 12, g.getWidth(), yposDate - 12 + 1); 
+}
+
+let lastBatPct = 0;
+
+function drawBatBar(day) {
+  const batPct = E.getBattery() / 100;
+  if(batPct != lastBatPct) {
+    const ymarginBar = 16;
+    const xmarginBar = 14;
+
+    const barWidth = g.getWidth() - xmarginBar * 2;
+    const barHeight = 6;
+
+    const brighten = 0.04;
+    g.setColor(bgColor[0] + brighten, bgColor[1] + brighten, bgColor[2] + brighten);
+    fillRoundedRect(xmarginBar, yposDate - ymarginBar, xmarginBar+barWidth, yposDate - ymarginBar + barHeight, 3)
+    setColorByMeridian();
+    fillRoundedRect(xmarginBar, yposDate - ymarginBar, xmarginBar+(barWidth*batPct), yposDate - ymarginBar + barHeight, 3)
+  }
+  lastBatPct = batPct;
 }
 
 // handle switch display on by pressing BTN1
@@ -158,29 +220,37 @@ Bangle.on('lcdPower', function(on) {
 });
 
 // clean app screen
+g.setBgColor(bgColor[0], bgColor[1], bgColor[2]);
 g.clear();
-Bangle.loadWidgets();
-g.setColor(bgColor[0], bgColor[1], bgColor[2]);
-g.fillRect(0, 25, g.getWidth(), g.getHeight());
-Bangle.drawWidgets();
+if(showWidgets){
+  g.setColor(bgColor[0], bgColor[1], bgColor[2]);
+  g.fillRect(0, 25, g.getWidth(), g.getHeight());
+  // Fills entire widget bar with black, so no gray peeks through
+  g.setColor(0,0,0);
+  g.fillRect(0, 0, g.getWidth(), 25);
+  Bangle.loadWidgets();
+  Bangle.drawWidgets();
+}
 
-// refesh every 100 milliseconds
-setInterval(redraw, 1000);
+// refesh every half second
+setInterval(fastRedraw, 500);
+setInterval(slowRedraw, 5000);
 
 // draw now
-redraw();
+fastRedraw();
+slowRedraw();
 drawHR();
 
 // Show launcher when middle button pressed
 setWatch(Bangle.showLauncher, BTN2, {repeat:false,edge:"falling"});
 
-var clickTimes = [];
+let clickTimes = [];
 setWatch(function(e) {
   while (clickTimes.length >= HR_CLICK_COUNT) {
     clickTimes.shift();
   }
   clickTimes.push(e.time);
-  var clickPeriod = e.time-clickTimes[0];
+  let clickPeriod = e.time-clickTimes[0];
   if (clickTimes.length == HR_CLICK_COUNT && clickPeriod< HR_CLICK_PERIOD) {
     toggleHR();
     clickTimes = [];
@@ -200,3 +270,22 @@ function toggleHR(){
     drawHR();
   }
 }
+
+let _GB = global.GB;
+global.GB = (event) => {
+  switch (event.t) {
+    case "notify":
+      console.log(event);
+      break;
+    case "musicinfo":
+      console.log
+      break;
+    case "musicstate":
+      console.log
+      break;
+    case "call":
+      console.log
+      break;
+  }
+  if(_GB)setTimeout(_GB,0,event);
+};
