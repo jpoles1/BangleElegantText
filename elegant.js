@@ -216,7 +216,10 @@ function drawBatBar(day) {
 
 // handle switch display on by pressing BTN1
 Bangle.on('lcdPower', function(on) {
-  if (on) redraw();
+  if (on) {
+    fastRedraw();
+    slowRedraw();
+  }
 });
 
 // clean app screen
