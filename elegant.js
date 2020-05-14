@@ -63,7 +63,7 @@ function fastRedraw() {
   } else {
     drawBatBar();
   }
-
+  drawBluetooth();
 }
 function slowRedraw() {
   drawDate();
@@ -212,6 +212,19 @@ function drawBatBar(day) {
     fillRoundedRect(xmarginBar, yposDate - ymarginBar, xmarginBar+(barWidth*batPct), yposDate - ymarginBar + barHeight, 3)
   }
   lastBatPct = batPct;
+}
+
+const img_bt = E.toArrayBuffer(atob("CxQBBgDgFgJgR4jZMawfAcA4D4NYybEYIwTAsBwDAA=="));
+function drawBluetooth(){
+  const x0 = xyCenter + 65;
+  const y0 = yposDate + (showWidgets ? 10 : 15);
+  if (NRF.getSecurityStatus().connected){
+    g.setColor(0,0.5,1);
+  }
+  else {
+    g.setColor(0.3,0.3,0.3);
+  }
+  g.drawImage(img_bt, x0, y0, {scale: 2.5});
 }
 
 // handle switch display on by pressing BTN1
