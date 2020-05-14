@@ -57,9 +57,6 @@ function fillRoundedRect(x1, y1, x2, y2, r) {
 
 function fastRedraw() {
   drawTime();
-}
-function slowRedraw() {
-  drawDate();
   if(showWidgets) {
     //not enough room for bat bar?
     drawDivider();
@@ -67,6 +64,9 @@ function slowRedraw() {
     drawBatBar();
   }
 
+}
+function slowRedraw() {
+  drawDate();
 }
 
 let lastTimeString = "";
@@ -174,13 +174,13 @@ function drawHR(hrm) {
   g.clearRect(0, yposDate, 80, g.getHeight());
   if(hrPow){
     g.setColor(176/255, 44/255, 44/255);
-    g.fillRect(x0, y0, x0+width, y0+height);
+    fillRoundedRect(x0, y0, x0+width, y0+height, 4);
   }
   g.setColor(1, 1, 1);
   g.setFont(font, 18);
   g.drawString("HR:", x0 + width/2, y0+15, true);
   g.setFont(font, 22);
-  if(hrm && hrm.confidence > 10) {
+  if(hrm && hrm.confidence > 80) {
     g.drawString(`${hrm.bpm}`, x0 + width/2, y0+38, true);
   }
   else {
@@ -281,13 +281,13 @@ global.GB = (event) => {
       console.log(event);
       break;
     case "musicinfo":
-      console.log
+      console.log(event);
       break;
     case "musicstate":
-      console.log
+      console.log(event);
       break;
     case "call":
-      console.log
+      console.log(event);
       break;
   }
   if(_GB)setTimeout(_GB,0,event);
